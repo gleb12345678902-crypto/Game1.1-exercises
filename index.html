@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ru" translate="no"><head><meta charset="utf-8">
+<meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Фрактальные крестики-нолики 27×27</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--fg:#1a1a1a;--line:#a9a59b;--ok:#ffe9a8;--x:#d33;--o:#27c;--mut:#ebe8e0;--c:14px;--ix:"X";--io:"O";color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111;--card:#1b1b1b;--fg:#eee;--line:#666;--ok:#6a5612;--x:#f66;--o:#6af;--mut:#2a2a2a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111;--card:#1b1b1b;--fg:#eee;--line:#666;--ok:#6a5612;--x:#f66;--o:#6af;--mut:#2a2a2a;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--fg);font:14px system-ui,sans-serif;display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top,0px)}
+#top{flex-shrink:0;padding:8px;background:var(--card);border-bottom:1px solid var(--line)}
+#r1{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+#st{font-weight:700;padding:3px 12px;border-radius:99px;background:var(--mut)}
+#st.px{color:var(--x)}#st.po{color:var(--o)}
+#sc{margin-left:auto;font-size:13px}
+#info{font-size:12px;opacity:.85;margin-bottom:6px;height:32px;line-height:16px;overflow:hidden}
+#ctl{display:flex;flex-wrap:wrap;gap:4px}
+button.b,select{background:var(--mut);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px}
+#wrap{flex:1;min-height:0;min-width:0;overflow:auto;padding:8px;touch-action:pan-x pan-y;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+#bd{display:grid;grid-template-columns:repeat(3,auto);gap:6px;width:max-content;margin:0 auto}
+.big{position:relative;display:grid;grid-template-columns:repeat(3,auto);gap:3px;padding:3px;border:2px solid var(--fg);border-radius:4px;background:var(--card)}
+.mid{position:relative;display:grid;grid-template-columns:repeat(3,auto);gap:1px;padding:1px;border:1px solid var(--line)}
+.cell{width:var(--c);height:var(--c);padding:0;margin:0;border:1px solid var(--line);background:var(--card);color:var(--fg);font-size:calc(var(--c)*.7);line-height:1;font-weight:700;overflow:hidden}
+.cell.x{color:var(--x)}.cell.o{color:var(--o)}
+.cell.ok{background:var(--ok)}
+.cell.ok:hover{filter:brightness(.88)}
+.cell.last{outline:2px solid var(--fg);outline-offset:-2px}
+.cell.hint{outline:3px dashed var(--o);outline-offset:-2px;animation:p 1s infinite alternate}
+@keyframes p{to{opacity:.4}}
+.mid.w1::after,.mid.w2::after,.mid.w3::after,.big.w1::after,.big.w2::after,.big.w3::after{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-weight:800;background:color-mix(in srgb,var(--card) 78%,transparent)}
+.mid.w1::after{content:var(--ix);color:var(--x);font-size:calc(var(--c)*3)}
+.mid.w2::after{content:var(--io);color:var(--o);font-size:calc(var(--c)*3)}
+.mid.w3::after{content:"–";color:var(--line);font-size:calc(var(--c)*3)}
+.big.w1::after,.big.w2::after,.big.w3::after{z-index:2;font-size:calc(var(--c)*10);background:color-mix(in srgb,var(--card) 88%,transparent)}
+.big.w1::after{content:var(--ix);color:var(--x)}.big.w2::after{content:var(--io);color:var(--o)}.big.w3::after{content:"–";color:var(--line)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.ov[hidden]{display:none}
+.box{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:16px;max-width:420px;width:100%;max-height:88dvh;overflow:auto}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.row small{display:block;opacity:.75;font-size:12px;margin-top:2px}
+.row input{width:22px;height:22px;flex-shrink:0}
+.sub{margin:8px 0 4px;opacity:.8;font-size:13px}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+#pre{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.ic input{width:64px;font-size:16px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--mut);color:var(--fg);text-align:center}
+@media(min-width:900px){body{flex-direction:row;padding-top:0}#top{width:290px;padding:16px;border-bottom:0;border-right:1px solid var(--line);overflow:auto}#st{font-size:16px}#info{font-size:13px;margin:8px 0 12px;height:auto;min-height:48px}#ctl{flex-direction:column;gap:6px}#ctl>*{width:100%;padding:9px}#wrap{padding:16px}}
+</style></head><body>
+<div id="top">
+<div id="r1"><span id="st"></span><span id="sc"></span><button class="b" id="gs" title="Настройки">⚙️</button><button class="b" id="th" title="Тема">🌓</button></div>
+<div id="info"></div>
+<div id="ctl">
+<select id="lv"><option value="0">Два игрока</option><option value="1">Бот: легко</option><option value="2" selected>Бот: средне</option><option value="3">Бот: сложно</option></select>
+<select id="sd"><option value="1">Я: X</option><option value="2">Я: O</option></select>
+<button class="b" id="hb">💡 Подсказка</button><button class="b" id="un">↶ Отмена</button>
+<button class="b" id="zm">−</button><button class="b" id="zp">+</button>
+<button class="b" id="go">🎯 К цели</button><button class="b" id="nw">Новая игра</button>
+</div></div>
+<div id="wrap"><div id="bd"></div></div>
+
+<div class="ov" id="cf" hidden><div class="box"><b>Начать новую игру?</b><p>Текущая партия будет потеряна.</p>
+<div class="acts"><button class="b" id="cn">Отмена</button><button class="b" id="cy">Начать</button></div></div></div>
+
+<div class="ov" id="sm" hidden><div class="box">
+<b>Настройки</b>
+<p class="sub">Правила применяются к новой партии.</p>
+<label class="row"><span><b>Подсчёт ничьи</b><small>Поле без победителя достаётся тому, у кого больше на своём уровне. Выкл — ничья.</small></span><input type="checkbox" id="s_draw"></label>
+<label class="row"><span><b>АБО</b><small>При равенстве смотрит на уровень ниже в этом же поле. Нужен подсчёт ничьи.</small></span><input type="checkbox" id="s_abo"></label>
+<label class="row"><span><b>Обычные линии</b><small>Поле можно выиграть линией из 3, помимо «5 из 9».</small></span><input type="checkbox" id="s_lines"></label>
+<label class="row"><span><b>Классика</b><small>Только линии из 3, правило «5 из 9» отключено.</small></span><input type="checkbox" id="s_classic"></label>
+<p class="sub">Иконки</p>
+<div id="pre"></div>
+<div class="ic">Свои: <input id="i_x" maxlength="4"> <input id="i_o" maxlength="4"></div>
+<div class="acts"><button class="b" id="sx">Готово</button></div>
+</div></div>
+<script>
+const $=id=>document.getElementById(id);
+const root=document.documentElement;
+const Lw=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const R=['X','Y','Z'],C=['I','II','III'],MR=['А','Б','В'],MC=['1','2','3'],SR=['1','2','3'],SC=['а','б','в'];
+const bn=B=>C[B%3]+R[B/3|0],mn=M=>MC[M%3]+MR[M/3|0],sn=S=>SC[S%3]+SR[S/3|0];
+const nm=i=>bn(i/81|0)+'–'+mn((i/9|0)%9)+'–'+sn(i%9);
+const LVL=()=>+$('lv').value,botSide=()=>$('sd').value==1?2:1;
+/* ---- настройки ---- */
+let S={draw:0,abo:0,lines:0,classic:0,ix:'X',io:'O'};
+try{Object.assign(S,JSON.parse(localStorage.getItem('set')||'{}'));}catch(e){}
+const saveS=()=>{try{localStorage.setItem('set',JSON.stringify(S));}catch(e){}};
+const pickRules=()=>({draw:S.draw,abo:S.abo,lines:S.lines,classic:S.classic});
+let rules=pickRules();
+const IC=p=>p==1?S.ix:S.io;
+function applyIcons(){
+ const q=s=>'"'+s.replace(/["\\]/g,'')+'"';
+ root.style.setProperty('--ix',q(S.ix));root.style.setProperty('--io',q(S.io));
+ $('sd').options[0].text='Я: '+S.ix;$('sd').options[1].text='Я: '+S.io;
+}
+/* ---- логика ---- */
+let cells,mid,big,turn,tb,tm,last,over,hint,hist,lock=0;
+const cnt=(a,o,n,p)=>{let c=0;for(let i=o;i<o+n;i++)if(a[i]==p)c++;return c;};
+const cmp=(x,y)=>x>y?1:y>x?2:0;
+const lineOf=(a,o,p)=>Lw.some(l=>l.every(k=>a[o+k]==p));
+const useLines=()=>rules.lines||rules.classic;
+function bigWin(B,p){return(!rules.classic&&cnt(mid,B*9,9,p)>=5)||(useLines()&&lineOf(mid,B*9,p));}
+function gameWin(p){return(!rules.classic&&cnt(big,0,9,p)>=5)||(useLines()&&lineOf(big,0,p));}
+function bigTie(B){
+ if(!rules.draw)return 3;
+ let w=cmp(cnt(mid,B*9,9,1),cnt(mid,B*9,9,2));
+ if(!w&&rules.abo)w=cmp(cnt(cells,B*81,81,1),cnt(cells,B*81,81,2));
+ return w||3;
+}
+function gameTie(){
+ if(!rules.draw)return 3;
+ let w=cmp(cnt(big,0,9,1),cnt(big,0,9,2));
+ if(!w&&rules.abo){
+  w=cmp(cnt(mid,0,81,1),cnt(mid,0,81,2));
+  if(!w)w=cmp(cnt(cells,0,729,1),cnt(cells,0,729,2));
+ }
+ return w||3;
+}
+const bd=$('bd'),wrap=$('wrap'),cEl=[],mEl=[],bEl=[];
+for(let B=0;B<9;B++){const b=document.createElement('div');b.className='big';bEl.push(b);
+ for(let M=0;M<9;M++){const m=document.createElement('div');m.className='mid';mEl.push(m);
+  for(let S2=0;S2<9;S2++){const c=document.createElement('button');c.className='cell';c.dataset.i=B*81+M*9+S2;cEl.push(c);m.appendChild(c);}
+  b.appendChild(m);}
+ bd.appendChild(b);}
+const mopen=(B,M)=>big[B]==0&&mid[B*9+M]==0;
+function allowedT(i,tb,tm){
+ if(cells[i])return false;
+ const B=i/81|0,M=(i/9|0)%9;
+ if(!mopen(B,M))return false;
+ if(tb<0||big[tb]!=0)return true;
+ if(B!=tb)return false;
+ return mopen(tb,tm)?M==tm:true;
+}
+const allowed=i=>!over&&allowedT(i,tb,tm);
+function reset(){
+ rules=pickRules();
+ cells=Array(729).fill(0);mid=Array(81).fill(0);big=Array(9).fill(0);
+ turn=1;tb=tm=-1;last=-1;over=0;hint=-1;hist=[];render();centerBoard();maybeBot();
+}
+function play(i){
+ hist.push([cells.slice(),mid.slice(),big.slice(),turn,tb,tm,last]);hint=-1;
+ const p=turn,B=i/81|0,M=(i/9|0)%9,S2=i%9,mk=B*9+M,base=B*81+M*9;
+ cells[i]=p;last=i;
+ if(lineOf(cells,base,p))mid[mk]=p;
+ else if(cnt(cells,base,9,0)==0)mid[mk]=rules.draw?cmp(cnt(cells,base,9,1),cnt(cells,base,9,2)):3;
+ let nb=0;
+ if(mid[mk]&&big[B]==0){
+  const o=mid[mk];
+  if(o<3&&bigWin(B,o))big[B]=nb=o;
+  else if(cnt(mid,B*9,9,0)==0)big[B]=nb=bigTie(B);
+ }
+ if(nb&&nb<3&&gameWin(nb))over=nb;
+ tb=M;tm=S2;turn=3-p;
+ if(!over&&!cells.some((v,k)=>allowed(k)))over=gameTie();
+ render();
+ if(!(LVL()&&turn==botSide()))focusTarget();
+ maybeBot();
+}
+/* ---- бот ---- */
+function gain(i,p){
+ const B=i/81|0,M=(i/9|0)%9,S2=i%9,o=3-p,base=B*81+M*9;
+ let g=S2==4?1.5:S2%2==0?.8:0,w=0;
+ for(const l of Lw){
+  if(!l.includes(S2))continue;
+  let a=0,b=0;
+  for(const k of l){if(k==S2)continue;const v=cells[base+k];if(v==p)a++;else if(v==o)b++;}
+  if(a==2)w=1;else if(b==2)g+=7;else if(a==1&&b==0)g+=1.5;
+ }
+ if(w){
+  g+=10+(M==4?2:0);
+  const mk=B*9+M,old=mid[mk];mid[mk]=p;
+  if(bigWin(B,p)){g+=30;const ob=big[B];big[B]=p;if(gameWin(p))g+=1000;big[B]=ob;}
+  else g+=cnt(mid,B*9,9,p)*1.5;
+  mid[mk]=old;
+ }
+ return g;
+}
+function score(i,p,d){
+ let g=gain(i,p);
+ if(d){
+  const B=i/81|0,M=(i/9|0)%9,S2=i%9,mk=B*9+M,base=B*81+M*9,om=mid[mk],ob=big[B],o=3-p;
+  cells[i]=p;
+  if(lineOf(cells,base,p)){mid[mk]=p;if(bigWin(B,p))big[B]=p;}
+  else if(cnt(cells,base,9,0)==0)mid[mk]=3;
+  let best=0,n=0;
+  for(let k=0;k<729;k++)if(allowedT(k,M,S2)){n++;const e=gain(k,o);if(e>best)best=e;}
+  cells[i]=0;mid[mk]=om;big[B]=ob;
+  g-=.9*best+(n>20?2:0);
+ }
+ return g;
+}
+function pick(p,d,noise){
+ let best=-1e9,bi=-1;
+ for(let k=0;k<729;k++)if(allowed(k)){const s=score(k,p,d)+Math.random()*noise;if(s>best){best=s;bi=k;}}
+ return bi;
+}
+function botMove(){
+ const L=LVL();
+ if(over||!L||turn!=botSide())return;
+ const i=pick(turn,L==3?1:0,L==1?8:L==2?1.5:.3);
+ if(i>=0)play(i);
+}
+function maybeBot(){if(!over&&LVL()&&turn==botSide())setTimeout(botMove,300);}
+/* ---- интерфейс ---- */
+function render(){
+ for(let i=0;i<729;i++){
+  const v=cells[i],c=cEl[i];
+  c.textContent=v==1?S.ix:v==2?S.io:'';
+  c.className='cell'+(v==1?' x':v==2?' o':'')+(allowed(i)?' ok':'')+(i==last?' last':'')+(i==hint?' hint':'');
+ }
+ for(let k=0;k<81;k++)mEl[k].className='mid'+(mid[k]?' w'+mid[k]:'');
+ for(let B=0;B<9;B++)bEl[B].className='big'+(big[B]?' w'+big[B]:'');
+ const n1=cnt(big,0,9,1),n2=cnt(big,0,9,2);
+ const st=$('st');
+ st.textContent=over?(over==3?'Ничья':'Победил '+IC(over)+'!'):'Ходит '+IC(turn);
+ st.className=over?'':turn==1?'px':'po';
+ $('sc').textContent=S.ix+' '+n1+' : '+n2+' '+S.io+(rules.classic?'':' (до 5)');
+ let t;
+ if(over)t='Игра окончена';
+ else if(tb<0)t='Цель: любая клетка';
+ else if(big[tb])t='Большое '+bn(tb)+' закрыто — любая клетка';
+ else if(!mopen(tb,tm))t='Среднее '+mn(tm)+' закрыто — любое в '+bn(tb);
+ else t='Цель: '+bn(tb)+'–'+mn(tm);
+ $('info').textContent=t+(last>=0?' · Последний: '+nm(last):'')+(hint>=0?' · 💡 '+nm(hint):'');
+}
+function centerBoard(){wrap.scrollLeft=(wrap.scrollWidth-wrap.clientWidth)/2;wrap.scrollTop=(wrap.scrollHeight-wrap.clientHeight)/2;}
+function focusTarget(force){
+ if(over||tb<0)return;
+ const el=(big[tb]||!mopen(tb,tm))?bEl[tb]:mEl[tb*9+tm];
+ const a=el.getBoundingClientRect(),r=wrap.getBoundingClientRect();
+ if(!force&&a.left>=r.left+6&&a.right<=r.right-6&&a.top>=r.top+6&&a.bottom<=r.bottom-6)return;
+ wrap.scrollLeft+=(a.left+a.right)/2-(r.left+r.right)/2;
+ wrap.scrollTop+=(a.top+a.bottom)/2-(r.top+r.bottom)/2;
+ lock=Date.now()+300;
+}
+bd.addEventListener('click',e=>{
+ const c=e.target.closest('.cell');if(!c)return;
+ if(Date.now()<lock)return;
+ const i=+c.dataset.i;
+ if(!allowed(i)||(LVL()&&turn==botSide()))return;
+ play(i);
+});
+$('hb').onclick=()=>{
+ if(over||(LVL()&&turn==botSide()))return;
+ hint=pick(turn,1,0);render();
+ if(hint>=0){cEl[hint].scrollIntoView({block:'center',inline:'center'});lock=Date.now()+300;}
+};
+$('un').onclick=()=>{
+ if(!hist.length)return;
+ do{[cells,mid,big,turn,tb,tm,last]=hist.pop();}while(LVL()&&turn==botSide()&&hist.length);
+ over=0;hint=-1;render();focusTarget();maybeBot();
+};
+const cur=()=>parseFloat(getComputedStyle(root).getPropertyValue('--c'));
+function setC(n,mx,my){
+ n=Math.max(8,Math.min(60,n));const o=cur();if(n==o)return;
+ if(mx===undefined){mx=wrap.clientWidth/2;my=wrap.clientHeight/2;}
+ const k=n/o,sl=wrap.scrollLeft,stp=wrap.scrollTop;
+ root.style.setProperty('--c',n+'px');
+ wrap.scrollLeft=(sl+mx)*k-mx;wrap.scrollTop=(stp+my)*k-my;
+}
+const zoom=f=>setC(cur()*f);
+$('zm').onclick=()=>zoom(1/1.25);
+$('zp').onclick=()=>zoom(1.25);
+let pd=0,pc=0;
+const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+wrap.addEventListener('touchstart',e=>{if(e.touches.length==2){pd=dist(e.touches);pc=cur();}},{passive:true});
+wrap.addEventListener('touchmove',e=>{
+ if(e.touches.length==2&&pd){
+  e.preventDefault();
+  const r=wrap.getBoundingClientRect(),t=e.touches;
+  setC(pc*dist(t)/pd,(t[0].clientX+t[1].clientX)/2-r.left,(t[0].clientY+t[1].clientY)/2-r.top);
+  lock=Date.now()+350;
+ }
+},{passive:false});
+wrap.addEventListener('touchend',e=>{if(pd)lock=Date.now()+350;if(e.touches.length<2)pd=0;},{passive:true});
+$('go').onclick=()=>{if(tb<0)centerBoard();else focusTarget(1);};
+/* подтверждение новой игры */
+let cfOk=null,cfNo=null,prevSd='1';
+function ask(ok,no){
+ if(!hist.length||over){ok();return;}
+ cfOk=ok;cfNo=no;$('cf').hidden=false;
+}
+$('cy').onclick=()=>{$('cf').hidden=true;if(cfOk)cfOk();};
+$('cn').onclick=()=>{$('cf').hidden=true;if(cfNo)cfNo();};
+$('nw').onclick=()=>ask(reset,null);
+$('sd').onchange=()=>ask(()=>{prevSd=$('sd').value;reset();},()=>{$('sd').value=prevSd;});
+$('lv').onchange=maybeBot;
+/* настройки */
+const PRE=[['X','O'],['❌','⭕'],['✖','●'],['⚔️','🛡️'],['🔥','💧'],['🐱','🐶'],['★','☾']];
+PRE.forEach(([a,b])=>{
+ const e=document.createElement('button');e.className='b';e.textContent=a+'  '+b;
+ e.onclick=()=>{S.ix=a;S.io=b;saveS();syncSet();applyIcons();render();};
+ $('pre').appendChild(e);
+});
+function syncSet(){
+ for(const k of ['draw','abo','lines','classic'])$('s_'+k).checked=!!S[k]||(k=='lines'&&!!S.classic);
+ $('s_abo').disabled=!S.draw;$('s_lines').disabled=!!S.classic;
+ $('i_x').value=S.ix;$('i_o').value=S.io;
+}
+for(const k of ['draw','abo','lines','classic'])$('s_'+k).onchange=e=>{
+ S[k]=e.target.checked?1:0;saveS();syncSet();
+ if(!hist.length)rules=pickRules();
+ render();
+};
+const ci=(id,key,def)=>{$(id).oninput=e=>{
+ S[key]=Array.from(e.target.value.trim()).slice(0,2).join('')||def;
+ saveS();applyIcons();render();
+};};
+ci('i_x','ix','X');ci('i_o','io','O');
+$('gs').onclick=()=>{syncSet();$('sm').hidden=false;};
+$('sx').onclick=()=>{$('sm').hidden=true;};
+/* тема */
+let th=null;try{th=localStorage.getItem('th');}catch(e){}
+if(th)root.dataset.theme=th;
+$('th').onclick=()=>{
+ const c=root.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+ const n=c=='dark'?'light':'dark';root.dataset.theme=n;
+ try{localStorage.setItem('th',n);}catch(e){}
+};
+const wide=innerWidth>=900;
+root.style.setProperty('--c',Math.max(10,Math.floor((wide?Math.min(innerWidth-340,innerHeight-50):innerWidth-30)/30))+'px');
+addEventListener('keydown',e=>{
+ if(e.target.tagName=='INPUT'||e.target.tagName=='SELECT')return;
+ const k=e.key.toLowerCase();
+ if(k=='+'||k=='=')zoom(1.25);else if(k=='-')zoom(.8);else if(k=='h'||k=='р')$('hb').click();else if(k=='u'||k=='г')$('un').click();
+});
+applyIcons();
+reset();
+</script></body></html>
